@@ -13,10 +13,15 @@ import org.jetbrains.annotations.NotNull;
 import utility.EmbedUtils;
 
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Poker {
 
+    private static final int ACTION_TIMEOUT = 10;
     private static final ArrayList<Poker> games = new ArrayList<>();
     private final List<User> players;
     private final Map<User, PlayerData> playerData = new HashMap<>();
@@ -25,12 +30,15 @@ public class Poker {
     private int nextPlayerIndex;
     private int playerRaise;
     private int requiredMoneyInPot;
-    private boolean waitingForUserRaise;
+    private volatile boolean waitingForUserRaise;
     private boolean firstRound;
     private int lastRaisePlayerIndex;
     private int remainingPlayers;
     private final Random random = new Random();
     private final Set<PlayerAction> authorizedActions = new HashSet<>();
+    private static final ScheduledExecutorService taskExecutorService =
+            Executors.newScheduledThreadPool(1);
+    private ScheduledFuture<?> userTimeoutCheckFuture;
 
     public enum PokerState {
         WAITING_TO_START,
@@ -99,6 +107,7 @@ public class Poker {
                         .forEach(player -> player.openPrivateChannel().queue(channel ->
                                 channel.sendMessage("Which cards would you like to replace? Enter card numbers " +
                                         "separated by spaces, or 'none', if you don't want to replace any.").queue()));
+                setUserTimeout();
             } else {
                 if (waitingForUserRaise) {
                     processPlayerRaise();
@@ -119,10 +128,12 @@ public class Poker {
                 } else {
                     playerData.get(user).embed.editMessageEmbeds(eb.build()).setActionRows(actionRow).queue();
                 }
+                setUserTimeout();
             }
         } else if (state == PokerState.REPLACING_CARDS) {
             if (players.stream().filter(player -> playerData.get(player).inGame)
                     .allMatch(player -> playerData.get(player).replacedCards)) {
+                userTimeoutCheckFuture.cancel(false);
                 firstRound = true;
                 lastRaisePlayerIndex = -1;
                 nextPlayerIndex = -1;
@@ -175,6 +186,38 @@ public class Poker {
                 ActionRow actionRow = getUserActions();
                 EmbedBuilder eb = generatePlayerEmbed(user);
                 playerData.get(user).embed.editMessageEmbeds(eb.build()).setActionRows(actionRow).queue();
+                setUserTimeout();
+            }
+        }
+    }
+
+    private void setUserTimeout() {
+        if (state == PokerState.REPLACING_CARDS) {
+            userTimeoutCheckFuture = taskExecutorService.schedule(() -> {
+                if (state == PokerState.REPLACING_CARDS) {
+                    players.stream().filter(player -> playerData.get(player).inGame)
+                            .filter(player -> !playerData.get(player).replacedCards)
+                            .forEach(player -> player.openPrivateChannel().queue(channel ->
+                                    channel.sendMessage("You didn't respond in time, so you will not replace any cards.")
+                                            .queue()));
+                    players.stream().filter(player -> playerData.get(player).inGame)
+                            .forEach(player -> playerData.get(player).replacedCards = true);
+                    next();
+                }
+            }, ACTION_TIMEOUT, TimeUnit.SECONDS);
+        } else {
+            if (playerData.get(players.get(nextPlayerIndex)).moneyInPot < requiredMoneyInPot) {
+                userTimeoutCheckFuture = taskExecutorService.schedule(() -> {
+                    players.get(nextPlayerIndex).openPrivateChannel().queue(channel ->
+                            channel.sendMessage("You didn't respond in time, so you will fold.").queue());
+                    timeout(PlayerAction.FOLD);
+                }, ACTION_TIMEOUT, TimeUnit.SECONDS);
+            } else {
+                userTimeoutCheckFuture = taskExecutorService.schedule(() -> {
+                    players.get(nextPlayerIndex).openPrivateChannel().queue(channel ->
+                            channel.sendMessage("You didn't respond in time, so you will check.").queue());
+                    timeout(PlayerAction.CHECK);
+                }, ACTION_TIMEOUT, TimeUnit.SECONDS);
             }
         }
     }
@@ -255,7 +298,9 @@ public class Poker {
             try {
                 playerRaise = Integer.parseInt(event.getMessage().getContentRaw());
                 if (playerRaise >= 1) {
-                    next();
+                    if (userTimeoutCheckFuture.cancel(false)) {
+                        next();
+                    }
                 } else {
                     event.getChannel().sendMessage("Raise must be at least 1.").queue();
                 }
@@ -328,23 +373,39 @@ public class Poker {
     }
 
     public void setPlayerAction(PlayerAction action) {
-        if (authorizedActions.contains(action)) {
-            authorizedActions.clear();
-            switch (action) {
-                case CHECK -> next();
-                case FOLD -> {
-                    playerData.get(players.get(nextPlayerIndex)).inGame = false;
-                    remainingPlayers--;
-                    next();
-                }
-                case CALL -> {
-                    playerData.get(players.get(nextPlayerIndex)).moneyInPot = requiredMoneyInPot;
-                    next();
-                }
-                case RAISE -> players.get(nextPlayerIndex).openPrivateChannel().queue(channel ->
-                        channel.sendMessage("How much would you like to raise by?")
-                                .queue(msg -> waitingForUserRaise = true));
+        setPlayerAction(action, false);
+    }
+
+    private void timeout(PlayerAction action) {
+        setPlayerAction(action, true);
+    }
+
+    private void setPlayerAction(PlayerAction action, boolean fromTimeout) {
+        if (!fromTimeout) {
+            if (authorizedActions.contains(action) &&
+                    (action == PlayerAction.RAISE || userTimeoutCheckFuture.cancel(false))) {
+                authorizedActions.clear();
+            } else {
+                return;
             }
+        } else {
+            waitingForUserRaise = false;
+            authorizedActions.clear();
+        }
+        switch (action) {
+            case CHECK -> next();
+            case FOLD -> {
+                playerData.get(players.get(nextPlayerIndex)).inGame = false;
+                remainingPlayers--;
+                next();
+            }
+            case CALL -> {
+                playerData.get(players.get(nextPlayerIndex)).moneyInPot = requiredMoneyInPot;
+                next();
+            }
+            case RAISE -> players.get(nextPlayerIndex).openPrivateChannel().queue(channel ->
+                    channel.sendMessage("How much would you like to raise by?")
+                            .queue(msg -> waitingForUserRaise = true));
         }
     }
 
