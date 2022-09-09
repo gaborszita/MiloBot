@@ -2,6 +2,7 @@ package commands;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -19,11 +20,10 @@ import utility.EmbedUtils;
 
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Basic implementation of a command.
@@ -98,6 +98,11 @@ public abstract class Command {
      * A list of all listeners this command has.
      */
     public ArrayList<EventListener> listeners = new ArrayList<>();
+
+    /**
+     * Types of channels in which this command can be used.
+     */
+    public Set<ChannelType> allowedChannelTypes = new HashSet<>();
 
     /**
      * The default constructor for a command.
@@ -466,4 +471,38 @@ public abstract class Command {
         }
     }
 
+    public String generateMarkdown(String commandName, String commandDescription, String[] commandArgs, int cooldown,
+                                   HashMap<String, Permission> permissions, ArrayList<Command> subCommands) {
+        StringBuilder markdown = new StringBuilder();
+        markdown.append("---\n\n");
+        markdown.append(String.format("<h3 id=\"%s\">%s</h3>\n\n", commandName, commandName));
+        markdown.append(commandDescription).append("\n\n");
+        markdown.append("#### Usage\n\n");
+        String argumentsText = getArgumentsText(commandName, commandArgs, "!")
+                .toString()
+                .replace("Arguments marked with * are optional, arguments marked with ** accept multiple inputs.", "");
+        markdown.append(argumentsText).append("\n\n");
+        if(cooldown > 0) {
+            markdown.append("#### Cooldown\n\n");
+            markdown.append(String.format("%d seconds.\n\n", cooldown));
+        }
+        if(!permissions.isEmpty()) {
+            markdown.append("#### Permissions\n\n");
+            permissions.forEach((permissionName, permission) -> markdown.append(String.format("`%s`", permissionName)));
+            markdown.append("\n\n");
+        }
+        if(!subCommands.isEmpty()) {
+            markdown.append("#### Sub Commands\n");
+            for (Command subCommand : subCommands) {
+                markdown.append("\n`").append("!").append(String.format("%s ", commandName)).append(subCommand.commandName);
+                if (!(subCommand.commandArgs.length == 0)) {
+                    for (int y = 0; y < subCommand.commandArgs.length; y++) {
+                        markdown.append(String.format(" {%s}", subCommand.commandArgs[y]));
+                    }
+                }
+                markdown.append("`\n").append(subCommand.commandDescription).append("\n\n");
+            }
+        }
+        return markdown.toString();
+    }
 }
