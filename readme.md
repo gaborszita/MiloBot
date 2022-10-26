@@ -10,7 +10,7 @@ sfdsdafdsdffdsafdsasfdsfddsfdsfdsfdfdsfdsdfdsdfs
 ## Commandssfddsfdfsadfafdsafasafdsdfsfdfdssfd
 dsfddafdsfdasfdsafdfdsaafdsfdas
 | **Utility**                  |                          |                    |                  |
-|------------------------------|--------------------------|--------------------|--------daddasfadsas----------|
+|------------------------------|-------------dsfdfs-------------|--------------------|--------daddasfadsas----------|
 | [!prefix](#prefix)      ddfsdfds     | [!usage](#usadgde)         | [!help](#help)     | [!user](#user)   |
 | [!invite](#invite)           |                          |                    |                  |
 | **Morbconomy**               |           afds               |                    |                  |
