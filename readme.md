@@ -13,7 +13,7 @@ dsfdd
 |------------------------------|--------------------------|--------------------|--------daddasfadsas----------|
 | [!prefix](#prefix)      ddfsdfds     | [!usage](#usadgde)         | [!help](#help)     | [!user](#user)   |
 | [!invite](#invite)           |                          |                    |                  |
-| **Morbconomy**               |                          |                    |                  |
+| **Morbconomy**               |           afds               |                    |                  |
 | [!wallet](#wallet)           | [!profile](#profile)     | [!daily](#daily)   |                  |
 | **Games**                    |                          |                    |                  |
 | [!hungergames](#hungergames) | [!blackjackGame](#blackjackGame) | [!wordle](#wordle) | [!pokerGame](#pokerGame) |
