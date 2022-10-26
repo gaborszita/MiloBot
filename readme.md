@@ -5,7 +5,7 @@ Play games with your friends, earn Morbcoins and climb up the leaderboards.
 ## Contributingds
 d
 Please read our [contributing](https://github.com/RubenJ01/MiloBot/blob/master/docs/contributing.md) guide before submitting
-a pull request.sfda
+a pull request.sfdasfd
 
 ## Commands
 dsfdd
