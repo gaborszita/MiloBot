@@ -8,7 +8,7 @@ Please read our [contributing](https://github.com/RubenJ01/MiloBot/blob/master/d
 a pull request.sfda
 
 ## Commands
-dsfd
+dsfdd
 | **Utility**                  |                          |                    |                  |
 |------------------------------|--------------------------|--------------------|------------------|
 | [!prefix](#prefix)           | [!usage](#usadgde)         | [!help](#help)     | [!user](#user)   |
