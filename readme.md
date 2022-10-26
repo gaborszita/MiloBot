@@ -11,7 +11,7 @@ a pull request.sfda
 dsfd
 | **Utility**                  |                          |                    |                  |
 |------------------------------|--------------------------|--------------------|------------------|
-| [!prefix](#prefix)           | [!usage](#usagde)         | [!help](#help)     | [!user](#user)   |
+| [!prefix](#prefix)           | [!usage](#usadgde)         | [!help](#help)     | [!user](#user)   |
 | [!invite](#invite)           |                          |                    |                  |
 | **Morbconomy**               |                          |                    |                  |
 | [!wallet](#wallet)           | [!profile](#profile)     | [!daily](#daily)   |                  |
