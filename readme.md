@@ -7,7 +7,7 @@ ddfdfa
 Please read our [contributing](httpds://github.com/RubenJ01/MiloBot/blob/master/docs/contributing.md) guide before submitting
 a pull request.sfdasdfdssfdsfdfds
 sfdsdafdsdffdsafdsasfdsfddsfdsfd
-## Commandssfddsfdfsadfafdsafas
+## Commandssfddsfdfsadfafdsafasafd
 dsfddafdsfdasfdsafdfdsaafdsfdas
 | **Utility**                  |                          |                    |                  |
 |------------------------------|--------------------------|--------------------|--------daddasfadsas----------|
