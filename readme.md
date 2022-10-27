@@ -3,7 +3,7 @@ tt
 Play games with your friends, earn Morbcoins and climb up the leaderboards.
 
 ## Contributingdsafds
-ddfdfasd
+ddfdfasddfsfdfds
 Please read our [contributing](httpds://github.com/RubenJ01/MiloBot/blob/master/docs/contributinjhg.md) guide before submitting
 a pull request.sfdasdfdssfdsfdfdsdsdfsdfs
 sfdsdafdsdffdsafdsasfdsfddsfsfddfsdsfdssfddsfdsfdsfdfdsfdsdfdsdfs
